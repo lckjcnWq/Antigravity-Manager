@@ -80,6 +80,8 @@ pub enum ContentBlock {
         thinking: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         signature: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        cache_control: Option<serde_json::Value>,
     },
 
     #[serde(rename = "image")]
@@ -94,6 +96,8 @@ pub enum ContentBlock {
         input: serde_json::Value,
         #[serde(skip_serializing_if = "Option::is_none")]
         signature: Option<String>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        cache_control: Option<serde_json::Value>,
     },
 
     #[serde(rename = "tool_result")]
@@ -102,6 +106,19 @@ pub enum ContentBlock {
         content: serde_json::Value, // Changed from String to Value to support Array of Blocks
         #[serde(skip_serializing_if = "Option::is_none")]
         is_error: Option<bool>,
+    },
+
+    #[serde(rename = "server_tool_use")]
+    ServerToolUse {
+        id: String,
+        name: String,
+        input: serde_json::Value,
+    },
+
+    #[serde(rename = "web_search_tool_result")]
+    WebSearchToolResult {
+        tool_use_id: String,
+        content: serde_json::Value,
     },
 
     #[serde(rename = "redacted_thinking")]
@@ -121,10 +138,13 @@ pub struct ImageSource {
 /// Tool
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Tool {
-    pub name: String,
+    #[serde(rename = "type")]
+    pub tool_type: Option<String>,
+    pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    pub input_schema: serde_json::Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub input_schema: Option<serde_json::Value>,
 }
 
 /// Metadata
@@ -154,6 +174,8 @@ pub struct ClaudeResponse {
 pub struct Usage {
     pub input_tokens: u32,
     pub output_tokens: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub server_tool_use: Option<serde_json::Value>,
 }
 
 // ========== Gemini 数据模型 ==========
@@ -240,6 +262,9 @@ pub struct Candidate {
     pub finish_reason: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub index: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "groundingMetadata")]
+    pub grounding_metadata: Option<serde_json::Value>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
